@@ -39,12 +39,67 @@ This script retrieves details about AWS Outposts and their associated subnets, s
 
 The script outputs the subnet data for each Outpost to both the console and a file named outpost_subnet_mapping.txt. If no Outposts or subnets are found, the script exits with an appropriate message.
 
+## Output
+
+The output file `outpost_subnet_mapping.txt` contains mappings of Outpost names and ARNs to their associated subnets. Example:
+
+```json
 Outpost Name and ARN to Subnet Data Mapping:
-Outpost: MyOutpost1 (arn:aws:outposts:region:account-id:outpost/op-0123456789abcdef)
+Outpost: 1 (arn:aws:outposts:us-east-2:123456789011:outpost/op-0db23s7mc345tyssh)  
 Subnets:
-[    {        "SubnetId": "subnet-0123456789abcdef",        "CidrBlock": "10.0.1.0/24",        "EnableLniAtDeviceIndex": null,        "Tags": [            {                "Key": "Environment",                "Value": "Production"            }        ]
-    }
+[
+    [
+        "subnet-123b6dc43cq2334fd",
+        "192.168.1.0/24",
+        null,
+        [
+            {
+                "Key": "Name",
+                "Value": "subnet1"
+            }
+        ]
+    ],
+    [
+        "subnet-32123tt3k39zyx4d4",
+        "172.16.1.0/24",
+        1,
+        [
+            {
+                "Key": "Name",
+                "Value": "lni-subnet1"
+            }
+        ]
+    ]
 ]
+
+Outpost: 2 (arn:aws:outposts:us-east-2:123456789011:outpost/op-0cf1d123456sbad15)
+Subnets:
+
+[
+    [
+        "subnet-4567f1b67bl123en1",
+        "192.168.2.0/24",
+        null,
+        [
+            {
+                "Key": "Name",
+                "Value": "subnet2"
+            }
+        ]
+    ],
+    [
+        "subnet-78923dd45612f1lv2",
+        "172.16.2.0/24",
+        1,
+        [
+            {
+                "Key": "Name",
+                "Value": "lni-subnet2"
+            }
+        ]
+    ]
+]
+```
 
 ---
 
