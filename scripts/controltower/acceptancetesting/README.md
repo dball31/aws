@@ -115,5 +115,5 @@ The output file includes structured information such as:
 ---
 
 ## License
-This script is open-source and provided "as is" without warranty. Use it at your own risk.
+This script is open-source and provided as-is without any warranty. Use at your own risk.
 
