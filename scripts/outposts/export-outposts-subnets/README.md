@@ -43,10 +43,10 @@ The script outputs the subnet data for each Outpost to both the console and a fi
 
 The output file `outpost_subnet_mapping.txt` contains mappings of Outpost names and ARNs to their associated subnets. Example:
 
+```markdown
 Outpost Name and ARN to Subnet Data Mapping:
 Outpost: 1 (arn:aws:outposts:us-east-2:123456789011:outpost/op-0db23s7mc345tyssh)  
 Subnets:
-```json
 [
     [
         "subnet-123b6dc43cq2334fd",
@@ -67,6 +67,33 @@ Subnets:
             {
                 "Key": "Name",
                 "Value": "lni-subnet1"
+            }
+        ]
+    ]
+]
+
+Outpost: 2 (arn:aws:outposts:us-east-2:123456789011:outpost/op-0cf1d123456sbad15)  
+Subnets:
+[
+    [
+        "subnet-4567f1b67bl123en1",
+        "192.168.2.0/24",
+        null,
+        [
+            {
+                "Key": "Name",
+                "Value": "subnet2"
+            }
+        ]
+    ],
+    [
+        "subnet-78923dd45612f1lv2",
+        "172.16.2.0/24",
+        1,
+        [
+            {
+                "Key": "Name",
+                "Value": "lni-subnet2"
             }
         ]
     ]
