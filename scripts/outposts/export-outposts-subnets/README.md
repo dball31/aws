@@ -17,7 +17,7 @@ This script retrieves details about AWS Outposts and their associated subnets, s
 
 ---
 
-##Prerequisites
+## Prerequisites
 - **AWS CLI**: Ensure the AWS CLI is installed and configured with appropriate credentials and permissions.
   - Permissions:
      - `outposts:ListOutposts`
