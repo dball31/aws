@@ -1,0 +1,78 @@
+type: map
+mapping:
+  "region":
+    type: str
+    required: True
+  "version":
+    type: date
+    required: True
+    enum: [2021-03-15]
+  "resources":
+    type: seq
+    required: True
+    sequence:
+      - type: map
+        required: True
+        mapping:
+          "name":
+            type: str
+            required: True
+          "description":
+            type: str
+            required: False
+          "resource_file":
+            type: str
+            required: True
+          # parameter_file or inline parameters supported
+          "parameter_file":
+            type: str
+            required: False
+          "parameters":
+            type: seq
+            required: False
+            sequence:
+              - type: map
+                required: True
+                mapping:
+                  "parameter_key":
+                    type: str
+                    required: True
+                  "parameter_value":
+                    type: any
+                    required: True
+          "deploy_method":
+            type: str
+            required: True
+            enum: ['stack_set','scp','rcp']
+          "deployment_targets":
+            type: map
+            required: True
+            mapping:
+              "accounts":
+                type: seq
+                required: False
+                sequence:
+                  - type: any
+              "organizational_units":
+                type: seq
+                required: False
+                sequence:
+                  - type: str
+          "regions":
+            type: seq
+            required: False
+            sequence:
+              - type: str
+          "export_outputs":
+            type: seq
+            required: False
+            sequence:
+              - type: map
+                required: True
+                mapping:
+                  "name":
+                    type: str
+                    required: True
+                  "value":
+                    type: str
+                    required: True

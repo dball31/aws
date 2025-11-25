@@ -1,0 +1,145 @@
+name: CFN Nag Scan
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  cfnnag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ----------------------------
+      # Validate manifest.yaml syntax
+      # ----------------------------
+      - name: Validate manifest.yaml
+        run: |
+          pip install pykwalify pyyaml
+          echo "Validating manifest.yaml..."
+          pykwalify -d manifest.yaml -s schema/cfct-schema.yaml
+
+      # ------------------------------------------------------------
+      # Extract parameter_file references directly from manifest.yaml
+      # ------------------------------------------------------------
+      - name: Discover parameter files from manifest.yaml
+        id: params
+        run: |
+          echo "Extracting parameter_file entries from manifest.yaml..."
+          pip install pyyaml >/dev/null 2>&1
+
+          python3 << 'EOF'
+          import yaml, json, sys, os
+          manifest = yaml.safe_load(open("manifest.yaml"))
+
+          param_files = []
+          for resource in manifest.get("resources", []):
+              pf = resource.get("parameter_file")
+              if pf:
+                  param_files.append(pf)
+
+          print("Detected parameter files:", param_files)
+
+          # Write output to GITHUB_OUTPUT instead of deprecated set-output
+          github_output = os.environ.get("GITHUB_OUTPUT")
+          if github_output:
+             with open(github_output, "a") as f:
+                 f.write(f"param_files={','.join(param_files)}\n")
+          EOF
+
+      # -----------------------------------------------
+      # Validate JSON syntax for each discovered file
+      # -----------------------------------------------
+      - name: Validate JSON Parameter Files
+        if: steps.params.outputs.param_files != ''
+        run: |
+          echo "Validating JSON parameter files..."
+          IFS=',' read -ra FILES <<< "${{ steps.params.outputs.param_files }}"
+
+          for file in "${FILES[@]}"; do
+            echo "Checking JSON syntax: $file"
+            
+            if ! python3 -m json.tool < "$file" > /dev/null 2>&1; then
+              echo "❌ Invalid JSON in: $file"
+              python3 -m json.tool < "$file" 2>&1 || true
+              exit 1
+            fi
+
+            echo "✅ Valid JSON: $file"
+          done
+
+      - name: Skip JSON validation (no parameter files)
+        if: steps.params.outputs.param_files == ''
+        run: echo "No parameter_file entries found in manifest.yaml."
+
+      # -----------------------------------------------------
+      # Detect changed CloudFormation templates for cfn_nag
+      # -----------------------------------------------------
+      - name: Get changed CloudFormation files
+        id: changes
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            templates/**/*.yaml
+            templates/**/*.yml
+            templates/**/*.json
+
+      - name: Show changed files
+        run: |
+          echo "Changed CFN files:"
+          for file in ${{ steps.changes.outputs.all_modified_files }}; do
+            echo " - $file"
+          done
+
+      # ---------------------------------------------
+      # Run CFN Nag on changed CF templates only
+      # ---------------------------------------------
+      - name: Run cfn_nag on changed templates
+        if: steps.changes.outputs.all_modified_files != ''
+        run: |
+          sudo gem install cfn-nag
+          for file in ${{ steps.changes.outputs.all_modified_files }}; do
+            echo "Scanning $file..."
+            cfn_nag_scan --input-path "$file"
+          done
+
+      - name: Skip if no CFN files changed
+        if: steps.changes.outputs.all_modified_files == ''
+        run: echo "No CloudFormation template changes detected — skipping CFN Nag."
+
+      # -------------------------------------------------
+      # Run Parameter JSON vs Parameter YAML validation
+      # -------------------------------------------------
+      - name: Validate Parameter Files Against Templates
+        run: |
+          echo "Validating CloudFormation parameter JSON files..."
+      
+          # Loop over all JSON parameter files
+          for param_file in $(find parameters -name '*.json'); do
+              echo "Checking $param_file..."
+      
+              # Map parameter files to templates using folder-based pattern matching
+              if [[ $param_file == parameters/account/*.json ]]; then
+                  template="templates/account/account-resources.yaml"
+              elif [[ $param_file == parameters/network/*.json ]]; then
+                  template="templates/network/create-vpc.yaml"
+              else
+                  template=""
+              fi
+      
+              # Validate if template exists
+              if [[ -f "$template" ]]; then
+                  echo " → Matching template: $template"
+                  python3 .github/scripts/validate_cf_parameters.py "$template" "$param_file"
+              else
+                  echo "⚠ WARNING: No matching template found for $param_file"
+              fi
+          done
