@@ -45,7 +45,7 @@ fi
 #---
 #--- Set notification email (change this!)
 #---
-EMAIL="david.ball@cdw.com"
+EMAIL="some.email@somedomain.com"
 
 # Subscribe email if not already subscribed
 SUBSCRIBED=$(aws sns list-subscriptions-by-topic --topic-arn "$SNS_TOPIC_ARN" --query "Subscriptions[?Endpoint=='$EMAIL'].SubscriptionArn" --output text)
