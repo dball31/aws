@@ -86,6 +86,6 @@ Script for validation located at:
 
 --> .github/scripts/validate_cf_parameters.py
 
-## 📁 Repository Structure (Example)
+## 📁 Example CfCT Repository Structure
 
 ![alt text](image.png)
